@@ -73,11 +73,15 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
     }
 
 
+    // Idk if I need this piece, will review
     mapping(uint256 => Planet) private tokenIdToPlanet;
     mapping(uint256 => Sign) private tokenIdToSign;
     mapping(uint256 => House) private tokenIdToHouse;
 
     mapping(uint256 => address) private requestIdToSender;
+
+    // Events (Need to add later)
+    
 
     constructor(
         uint64 subscriptionId,
@@ -90,7 +94,7 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
     }
 
     // Assumes the subscription is funded sufficiently.
-    function requestRandomAstroValues() external {
+    function requestRandomWords() external returns(uint256) {
         // Will revert if subscription is not set and funded.
         uint256 requestId = COORDINATOR.requestRandomWords(
             keyHash,
@@ -101,6 +105,7 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
         );
 
         requestIdToSender[requestId] = msg.sender;
+        return requestId;
     }
 
     function fulfillRandomWords(
@@ -114,9 +119,10 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
         
 
         address userAddress = requestIdToSender[requestId];
-        delete requestIdToSender[requestId]; // Clean up mapping
+        // I think code below is erroneous
+        // delete requestIdToSender[requestId]; // Clean up mapping
 
-        _mintAstroNFT(userAddress, sign, house, planet);
+        _mintAstroNFT(userAddress, planet, sign, house);
     }
 
     function _mintAstroNFT(address userAddress, Planet planet, Sign sign, House house) private {
