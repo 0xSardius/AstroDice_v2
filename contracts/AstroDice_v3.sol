@@ -79,11 +79,6 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
     }
 
 
-    // Idk if I need this piece, will review. Ok on review I don't think this makes any fucking sense. Mapping token Ids to enums wtf is going on.
-    // mapping(uint256 => Planet) private tokenIdToPlanet;
-    // mapping(uint256 => Sign) private tokenIdToSign;
-    // mapping(uint256 => House) private tokenIdToHouse;
-
     mapping(uint256 => address) private requestIdToSender;
     mapping(address => Reading) public querentToReading;
 
@@ -138,38 +133,29 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
         uint256 newItemId = _tokenIds.current();
         _safeMint(userAddress, newItemId);
 
-        tokenIdToSign[newItemId] = sign;
-        tokenIdToHouse[newItemId] = house;
-        tokenIdToPlanet[newItemId] = planet;
-
-
+        querentToReading[msg.sender] = Reading(planet, sign, house);
 
         // Set the token URI for the newly minted token
         // You will need to create a function that generates the metadata URI based on these values
         // For this example, we'll assume a function `_tokenURI` exists that does this
-        _setTokenURI(newItemId, _tokenURI(newItemId));
+        _setTokenURI(newItemId, _tokenURI(newItemId, planet, sign, house));
     }
 
 
     function _tokenURI(uint256 tokenId, Planet planet, Sign sign, House house) private view returns (string memory) {
-   // Generate a base64 encoded JSON object, or alternatively point to an off-chain resource
-   // where the metadata is hosted. The below is a simplified example for on-chain metadata.
-   
-   // This is a pseudo-code placeholder. You would replace this with actual base64 JSON generation code.
-   string memory json = string(abi.encodePacked(
-       '{"name": "AstroDiceReading #', Strings.toString(tokenId), 
-       '", "description": "Your unique prediction with insight into your question.", ',
-       '"attributes": [',
-           '{"trait_type": "Planet", "value": "', _getPlanetName(planet), '"},',
-           '{"trait_type": "Sign", "value": "', _getSignName(sign), '"},',
-           '{"trait_type": "House", "value": "', _getHouseName(house), '"}',
-       ']}'
-   ));
+        Reading memory reading = querentToReading[ownerOf(tokenId)];
 
-   return string(abi.encodePacked(
-       "data:application/json;base64,", 
-       Base64.encode(Strings.toHexString(bytes(json)))
-   ));
+        string memory json = Base64.encode(bytes(string(abi.encodePacked(
+            '{"name": "AstroDiceReading #', Strings.toString(tokenId), 
+            '", "description": "Your unique astrological reading.", ',
+            '"attributes": [',
+                '{"trait_type": "Planet", "value": "', _getPlanetName(reading.planet), '"},',
+                '{"trait_type": "Sign", "value": "', _getSignName(reading.sign), '"},',
+                '{"trait_type": "House", "value": "', _getHouseName(reading.house), '"}',
+            ']}'
+        ))));
+
+        return string(abi.encodePacked("data:application/json;base64,", json));
 }
 
     function _getPlanetName(Planet planet) private pure returns (string memory) {
