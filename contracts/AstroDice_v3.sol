@@ -72,13 +72,20 @@ contract Astrodice is ERC721URIStorage, VRFConsumerBaseV2 {
         Twelfth
     }
 
+    struct Reading {
+        Planet planet;
+        Sign sign;
+        House house;
+    }
 
-    // Idk if I need this piece, will review
-    mapping(uint256 => Planet) private tokenIdToPlanet;
-    mapping(uint256 => Sign) private tokenIdToSign;
-    mapping(uint256 => House) private tokenIdToHouse;
+
+    // Idk if I need this piece, will review. Ok on review I don't think this makes any fucking sense. Mapping token Ids to enums wtf is going on.
+    // mapping(uint256 => Planet) private tokenIdToPlanet;
+    // mapping(uint256 => Sign) private tokenIdToSign;
+    // mapping(uint256 => House) private tokenIdToHouse;
 
     mapping(uint256 => address) private requestIdToSender;
+    mapping(address => Reading) public querentToReading;
 
     // Events (Need to add later)
     
